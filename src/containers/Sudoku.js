@@ -18,7 +18,7 @@ class Sudoku extends Component {
             gridValues: null,  // A 2D array storing the current values on the gameboard. You should update this when updating the game board values.
             selectedGrid: { row_index: -1, col_index: -1 }, // This objecct store the current selected grid position. Update this when a new grid is selected.
             gameBoardBorderStyle: "8px solid #000", // This stores the gameBoarderStyle and is passed to the gameboard div. Update this to have a error effect (Bonus #2).
-            completeFlag: false, // Set this flag to true when you wnat to set off the firework effect.
+            completeFlag: false, // Set this flag to true when you want to set off the firework effect.
             conflicts: [{ row_index: -1, col_index: -1 }] // The array stores all the conflicts positions triggered at this moment. Update the array whenever you needed.
         }
     }
@@ -56,6 +56,7 @@ class Sudoku extends Component {
                     {
                         newGrid[this.state.selectedGrid.row_index][this.state.selectedGrid.col_index] = (num === 0 ? "" : num);
                         this.setState({gridValues: newGrid});
+                        this.checkComplete();
                     }
                 }
             }
@@ -70,6 +71,7 @@ class Sudoku extends Component {
             {
                 newGrid[this.state.selectedGrid.row_index][this.state.selectedGrid.col_index] = (num === 0 ? "" : num);
                 this.setState({gridValues: newGrid});
+                this.checkComplete();
             }
         }
     }
@@ -128,8 +130,26 @@ class Sudoku extends Component {
             setTimeout(() => {
                 this.setState({conflicts: [{ row_index: -1, col_index: -1 }]});
             }, 1000)
+            this.setState({ gameBoardBorderStyle: "8px solid #E77" });
+            setTimeout(() => { this.setState({ gameBoardBorderStyle: "8px solid #333" }); }, 1000);
             return false;
         }
+    }
+
+    checkComplete = () => {
+        for(let i = 0; i < 9; i++)
+        {
+            for(let j = 0; j < 9; j++)
+            {
+                if(this.state.gridValues[i][j] === "" || this.state.gridValues[i][j] === "0")
+                {
+                    return false;
+                }
+            }
+        }
+        this.setState({ completeFlag: true });
+        setTimeout(() => { this.setState({ completeFlag: false }); }, 2500);    
+        return true;
     }
 
     componentDidMount = () => {
