@@ -9,6 +9,7 @@ import ScreenInputKeyBoard from '../components/ScreenInputKeyBoard'
 import { problemList } from "../problems"
 
 class Sudoku extends Component {
+
     constructor(props) {
         super(props);
         this.state = {
@@ -24,23 +25,111 @@ class Sudoku extends Component {
 
     handle_grid_1x1_click = (row_index, col_index) => {
         // TODO
-
+        if(this.state.problem.content[row_index][col_index] === "0")
+        {
+            this.setState({selectedGrid: { row_index: row_index, col_index: col_index}});
+        }
         // Useful hints:
-        // console.log(row_index, col_index)
-        // console.log(this.state.selectedGrid)
     }
 
     handleKeyDownEvent = (event) => {
         // TODO
 
         // Useful hints:
-        // console.log(event)
-        // if (this.state.gridValues !== null && this.state.selectedGrid.row_index !== -1 && this.state.selectedGrid.col_index !== -1 && (event.keyCode >= 48 && event.keyCode <= 57) || (event.keyCode >= 96 && event.keyCode <= 105)) {}
-        // if (this.state.problem.content[this.state.selectedGrid.row_index][this.state.selectedGrid.col_index] === "0") {}
+        let newGrid = this.state.gridValues;
+        let num = 0;
+        if (((this.state.gridValues !== null) && (this.state.selectedGrid.row_index !== -1) && (this.state.selectedGrid.col_index !== -1) && (event.keyCode >= 48 && event.keyCode <= 57)) || (event.keyCode >= 96 && event.keyCode <= 105)) 
+        {
+            if(event.keyCode >= 48 && event.keyCode <= 57)
+            {
+                num = event.keyCode - 48;
+            }
+            else if(event.keyCode >= 96 && event.keyCode <= 105)
+            {
+                num = event.keyCode - 96;
+            }
+            if (this.state.problem !== null)  
+            {
+                if(this.state.problem.content[this.state.selectedGrid.row_index][this.state.selectedGrid.col_index] === "0")
+                {
+                    if(this.checkInput(newGrid, this.state.selectedGrid.row_index, this.state.selectedGrid.col_index, num))
+                    {
+                        newGrid[this.state.selectedGrid.row_index][this.state.selectedGrid.col_index] = (num === 0 ? "" : num);
+                        this.setState({gridValues: newGrid});
+                    }
+                }
+            }
+        }
     }
 
     handleScreenKeyboardInput = (num) => {
-        // TODO
+        if(this.state.problem !== null && this.state.problem.content[this.state.selectedGrid.row_index][this.state.selectedGrid.col_index] === "0")
+        {
+            let newGrid = this.state.gridValues;
+            if(this.checkInput(newGrid, this.state.selectedGrid.row_index, this.state.selectedGrid.col_index, num))
+            {
+                newGrid[this.state.selectedGrid.row_index][this.state.selectedGrid.col_index] = (num === 0 ? "" : num);
+                this.setState({gridValues: newGrid});
+            }
+        }
+    }
+
+    checkInput = (grid, row_index, col_index, num) => {
+        if(num == 0)
+        {
+            return true;
+        }
+        this.setState({conflicts: [{ row_index: -1, col_index: -1 }]});
+        let gridId = Math.floor(col_index / 3) + Math.floor(row_index / 3) * 3;
+        // console.log("checking input");
+        // console.log(row_index);
+        // console.log(col_index);
+        // console.log(num);
+        //check the same grid
+        for(let i = Math.floor(gridId / 3) * 3; i < Math.floor(gridId / 3) * 3 + 3; i++)
+        {
+            for(let j = (gridId % 3) * 3; j < (gridId % 3) * 3 + 3; j++)
+            {
+                if(grid[i][j] == num)
+                {
+                    console.log("grid conflict");
+                    this.setState({conflicts: [...this.state.conflicts, { row_index: i, col_index: j}]});
+                    // return false;
+                }
+            }
+        }
+        //check the same row
+        for(let i = 0; i < 9; i++)
+        {
+            if(grid[row_index][i] == num)
+            {
+                console.log("row conflict");
+                this.setState({conflicts: [...this.state.conflicts, { row_index: row_index, col_index: i}]});
+                // return false;
+            }
+        }
+        //check the same col
+        for(let i = 0; i < 9; i++)
+        {
+            if(grid[i][col_index] == num)
+            {
+                console.log("col conflict");
+                this.setState({conflicts: [...this.state.conflicts, { row_index: i, col_index: col_index}]});
+                // return false;
+            }
+        }
+        if(this.state.conflicts.length === 1)
+        {
+            // console.log("no conflict");
+            return true;
+        }
+        else
+        {
+            setTimeout(() => {
+                this.setState({conflicts: [{ row_index: -1, col_index: -1 }]});
+            }, 1000)
+            return false;
+        }
     }
 
     componentDidMount = () => {
